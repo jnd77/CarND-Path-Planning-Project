@@ -17,6 +17,42 @@ Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoi
 
 The highway's waypoints loop around so the frenet s value, distance along the road, goes from 0 to 6945.554.
 
+
+## Model Documentation
+
+
+### State machine
+
+At each cycle, we check whether the car is getting too close to the car in front.
+A car in front is by definition a car less than 3 meters away in the d-axis, and less than 30 meters away in the s-axis.
+
+If a car is considered too close, and we are not in the process of changing lanes, then we explore whether it is possible to change lane.
+First by the checking the left lane (if not already on the most-left one), whether car is neither too close behind or too close in front.
+
+Same if it's not possible to switch to the left lane, then we consider the right lane.
+
+If a lane change is possible, then we initiate it.
+
+Then if a car is too close, and its speed is lower than ours, then we slow down by decreasing the target speed.
+The decrease is low enough, not to trigger the maximum acceleration limit.
+
+The state of changing lane will be considered done, once the d-position of the car is close to the center of the new lane.
+
+
+### Path generation
+
+Once the state has been defined (change lane or stay in current one), we compute a handful of anchor points.
+First, we use 2 anchor points based on the last trajectory (the last 2 points).
+Then we add 3 more points, respectively 30, 60 and 90 meters away on the target lane.
+
+
+### Trajectory generation
+
+Finally we generate the detailed trajectory, by using a spline on the anchor points calculated above in such a way as to have a speed equal to the target speed.
+We add these new points from the spline to the points left over from the previous trajectory, to ensure a smooth transition.
+
+
+
 ## Basic Build Instructions
 
 1. Clone this repo.
